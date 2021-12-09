@@ -1,48 +1,47 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using System;
 
 namespace Napilnik.Shop
 {
-    class Warehouse : IEnumerable<IProductCell>
+    class Warehouse
     {
-        private readonly List<Cell> _cells;
+        private readonly Dictionary<Good, int> _goods;
 
         public Warehouse()
         {
-            _cells = new List<Cell>();
+            _goods = new Dictionary<Good, int>();
         }
 
-        public IReadOnlyList<IProductCell> Cells => _cells;
+        public IReadOnlyDictionary<Good, int> Goods => _goods;
 
         public void Delive(Good good, int count)
         {
-            var newCell = new Cell(good, count);
-            int cellIndex = _cells.FindIndex(cell => cell.Good.Equals(good));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
 
-            if (cellIndex < 0)
-                _cells.Add(newCell);
+            var pair = _goods.FirstOrDefault(pair => pair.Key.Equals(good));
+
+            if (pair.Equals(default(KeyValuePair<Good, int>)))
+                _goods[good] = count;
             else
-                _cells[cellIndex].Merge(newCell);
+                _goods[pair.Key] = pair.Value + count;
         }
 
-        public void Withdraw(IReadOnlyList<IProductCell> products)
+        public void Withdraw(IReadOnlyDictionary<Good, int> products)
         {
             foreach (var product in products)
             {
-                var cell = _cells.Find(cell => cell.Good.Equals(product.Good));
-                cell.Detach(product);
+                if (_goods.ContainsKey(product.Key) == false)
+                    throw new InvalidOperationException();
+
+                if (_goods[product.Key] < product.Value)
+                    throw new InvalidOperationException();
             }
-        }
 
-        public IEnumerator<IProductCell> GetEnumerator()
-        {
-            foreach (var cell in _cells)
-                yield return cell;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            yield return GetEnumerator();
+            foreach (var product in products)
+                _goods[product.Key] -= product.Value;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Napilnik.Shop
 {
@@ -18,8 +19,8 @@ namespace Napilnik.Shop
 
             //Вывод всех товаров на складе с их остатком
             Console.WriteLine("Items in warehouse:");
-            foreach (var cell in warehouse.Cells)
-                Console.WriteLine($"name: {cell.Good.Name}\tcount: {cell.Count}");
+            foreach (var cell in warehouse.Goods)
+                Console.WriteLine($"name: {cell.Key.Name}\tcount: {cell.Value}");
             Console.WriteLine(new string('-',30));
 
             Cart cart = shop.Cart();
@@ -29,15 +30,15 @@ namespace Napilnik.Shop
             //Вывод всех товаров в корзине
             Console.WriteLine("Items in cart:");
             foreach (var item in cart.Items)
-                Console.WriteLine($"name: {item.Good.Name}\tcount: {item.Count}");
+                Console.WriteLine($"name: {item.Key.Name}\tcount: {item.Value}");
             Console.WriteLine(new string('-', 30));
 
             Console.WriteLine(cart.Order().Paylink);
             Console.WriteLine(new string('-', 30));
 
             Console.WriteLine("Items in warehouse after order:");
-            foreach (var cell in warehouse.Cells)
-                Console.WriteLine($"name: {cell.Good.Name}\tcount: {cell.Count}");
+            foreach (var cell in warehouse.Goods)
+                Console.WriteLine($"name: {cell.Key.Name}\tcount: {cell.Value}");
             Console.WriteLine(new string('-', 30));
 
             //cart.Add(iPhone12, 9); //Ошибка, после заказа со склада убираются заказанные товары

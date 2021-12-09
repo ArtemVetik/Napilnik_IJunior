@@ -6,9 +6,9 @@ namespace Napilnik.Shop
     class Order
     {
         private readonly IShop _shop;
-        private readonly IReadOnlyList<IProductCell> _payItems;
+        private readonly IReadOnlyDictionary<Good, int> _payItems;
 
-        public Order(IShop shop, IReadOnlyList<IProductCell> payItems)
+        public Order(IShop shop, IReadOnlyDictionary<Good, int> payItems)
         {
             if (shop == null)
                 throw new ArgumentNullException(nameof(shop));

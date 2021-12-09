@@ -21,26 +21,26 @@ namespace Napilnik.Shop
             return new Cart(this);
         }
 
-        public void Withdraw(IReadOnlyList<IProductCell> products)
+        public void Withdraw(IReadOnlyDictionary<Good, int> products)
         {
             _warehouse.Withdraw(products);
         }
 
         public int GetAviableCount(Good good)
         {
-            IProductCell cell = _warehouse.Cells.FirstOrDefault(cell => cell.Good.Equals(good));
+            var pair = _warehouse.Goods.FirstOrDefault(pair => pair.Key.Equals(good));
 
-            if (cell == null)
-                throw new ArgumentNullException(nameof(cell));
+            if (pair.Equals(default(KeyValuePair<Good, int>)))
+                throw new InvalidOperationException("The product is out of stock");
 
-            return cell.Count;
+            return pair.Value;
         }
 
-        public string GeneratePayLink(IReadOnlyList<IProductCell> payItems)
+        public string GeneratePayLink(IReadOnlyDictionary<Good, int> payItems)
         {
             string itemLink = string.Empty;
             foreach (var item in payItems)
-                itemLink += string.Format("id=\"{0}\"&count={1}&", item.Good.Name, item.Count);
+                itemLink += string.Format("id=\"{0}\"&count={1}&", item.Key.Name, item.Value);
 
             return string.Format("https://pay.shop.net?{0}", itemLink);
         }

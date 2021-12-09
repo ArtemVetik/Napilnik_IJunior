@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 
 namespace Napilnik.Shop
 {
-    class Cart : IEnumerable<IProductCell>
+    class Cart
     {
         private readonly IShop _shop;
-        private List<Cell> _payItems;
+        private readonly Dictionary<Good, int> _payItems;
 
         public Cart(IShop shop)
         {
@@ -15,43 +16,32 @@ namespace Napilnik.Shop
                 throw new ArgumentNullException(nameof(shop));
 
             _shop = shop;
-            _payItems = new List<Cell>();
+            _payItems = new Dictionary<Good, int>();
         }
 
-        public IReadOnlyList<IProductCell> Items => _payItems;
+        public IReadOnlyDictionary<Good, int> Items => _payItems;
 
         public void Add(Good good, int count)
         {
-            var newCell = new Cell(good, count);
-            int cellIndex = _payItems.FindIndex(cell => cell.Good.Equals(good));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
 
             int aviableCount = _shop.GetAviableCount(good);
-            int countInCart = cellIndex < 0 ? 0 : _payItems[cellIndex].Count;
+            var pair = _payItems.FirstOrDefault(pair => pair.Key.Equals(good));
 
-            if (countInCart + count > aviableCount)
-                throw new InvalidOperationException();
+            if (pair.Value + count > aviableCount)
+                throw new InvalidOperationException("There is not enough product in the store");
 
-            if (cellIndex < 0)
-                _payItems.Add(newCell);
+            if (pair.Equals(default(KeyValuePair<Good, int>)))
+                _payItems[good] = count;
             else
-                _payItems[cellIndex].Merge(newCell);
+                _payItems[pair.Key] = pair.Value + count; 
         }
 
         public Order Order()
         {
             _shop.Withdraw(_payItems);
             return new Order(_shop, _payItems);
-        }
-
-        public IEnumerator<IProductCell> GetEnumerator()
-        {
-            foreach (var cell in _payItems)
-                yield return cell;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            yield return GetEnumerator();
         }
     }
 }
